@@ -1,5 +1,6 @@
 package com.vladislav.model;
 
+import com.google.gson.annotations.Expose;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -8,20 +9,33 @@ import java.time.LocalDateTime;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Expose
     private int id;
     @Column(name = "event_name")
+    @Expose
     private String eventName;
     @Column(name = "date_time", updatable = false)
+    @Expose
     private LocalDateTime localDateTime;
     @ManyToOne
-    @JoinTable(name = "file_id")
+    @JoinColumn(name = "file_id")
+    @Expose
     private File file;
     @ManyToOne
-    @JoinTable(name = "user_id")
+    @JoinColumn(name = "user_id")
+    @Expose
     private User user;
 
     public Event() {
         localDateTime = LocalDateTime.now();
+    }
+
+    public Event(int id, String eventName, File file, User user) {
+        super();
+        this.id = id;
+        this.eventName = eventName;
+        this.file = file;
+        this.user = user;
     }
 
     public String getName() {

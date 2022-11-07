@@ -1,7 +1,6 @@
 package com.vladislav.repository.hibernate;
 
 import com.vladislav.model.File;
-import com.vladislav.model.User;
 import com.vladislav.repository.FileRepository;
 import com.vladislav.util.HiberUtil;
 import org.hibernate.Session;

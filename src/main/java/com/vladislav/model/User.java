@@ -1,5 +1,6 @@
 package com.vladislav.model;
 
+import com.google.gson.annotations.Expose;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -8,10 +9,13 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Expose
     private int id;
     @Column(name = "first_name")
+    @Expose
     private String firstName;
     @Column(name = "last_name")
+    @Expose
     private String lastName;
     @OneToMany(mappedBy = "user")
     private List<Event> eventList;

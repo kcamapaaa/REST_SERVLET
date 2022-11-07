@@ -1,5 +1,6 @@
 package com.vladislav.model;
 
+import com.google.gson.annotations.Expose;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -8,15 +9,20 @@ import java.util.List;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Expose
     private int id;
+    @Column(name = "file_name")
+    @Expose
     private String fileName;
     @Column(name = "file_path")
+    @Expose
     private String filePath;
     @OneToMany(mappedBy = "file")
     private List<Event> eventList;
 
     public File() {
     }
+
 
     public List<Event> getEventList() {
         return eventList;
