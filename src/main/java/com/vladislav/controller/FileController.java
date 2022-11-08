@@ -24,20 +24,22 @@ public class FileController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
         if (req.getParameter("id") != null) {
-            getFile(req);
+            getFile(req, resp);
         } else {
-            getAllFiles();
+            getAllFiles(req, resp);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        if(req.getParameter("id") != null) {
-            updateFile(req);
-        } else {
-            addNewFile(req);
-        }
+        addNewFile(req, resp);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        out = resp.getWriter();
+        updateFile(req, resp);
     }
 
     @Override
@@ -45,7 +47,8 @@ public class FileController extends HttpServlet {
         deleteFile(req, resp);
     }
 
-    private void getFile(HttpServletRequest req) {
+    private void getFile(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/json");
         int id = Integer.parseInt(req.getParameter("id"));
         File file = fileService.getFileById(id);
         if (file == null) {
@@ -56,8 +59,9 @@ public class FileController extends HttpServlet {
         }
     }
 
-    private void getAllFiles() {
+    private void getAllFiles(HttpServletRequest req, HttpServletResponse resp) {
         List<File> allFiles = fileService.getAllFiles();
+        resp.setContentType("application/json");
         if (allFiles.isEmpty()) {
             out.println("No files yet.");
         } else {
@@ -65,11 +69,12 @@ public class FileController extends HttpServlet {
         }
     }
 
-    private void updateFile(HttpServletRequest req) {
+    private void updateFile(HttpServletRequest req, HttpServletResponse resp) {
         int id = Integer.parseInt(req.getParameter("id"));
+        resp.setContentType("application/json");
         String fileName = req.getParameter("fileName");
         File fileById = fileService.getFileById(id);
-        if(fileById == null) {
+        if (fileById == null) {
             out.println("No file with this id.");
         } else {
             fileById.setFileName(fileName);
@@ -78,9 +83,11 @@ public class FileController extends HttpServlet {
         }
     }
 
-    private void addNewFile(HttpServletRequest req) {
+    private void addNewFile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json");
         String fileName = req.getParameter("fileName");
-        String filePath = req.getParameter("filePath");
+        String filePath = req.getReader().lines()
+                .reduce("", (accumulator, actual) -> accumulator + actual);
         File file = new File();
         file.setFileName(fileName);
         file.setFilePath(filePath);
@@ -90,6 +97,7 @@ public class FileController extends HttpServlet {
 
     private void deleteFile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         out = resp.getWriter();
+        resp.setContentType("application/json");
         int id = Integer.parseInt(req.getParameter("id"));
         boolean isDeleted = fileService.deleteFileById(id);
         out.println(isDeleted ? "File was deleted" : "File was not deleted");

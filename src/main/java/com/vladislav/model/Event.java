@@ -30,14 +30,6 @@ public class Event {
         localDateTime = LocalDateTime.now();
     }
 
-    public Event(int id, String eventName, File file, User user) {
-        super();
-        this.id = id;
-        this.eventName = eventName;
-        this.file = file;
-        this.user = user;
-    }
-
     public String getName() {
         return eventName;
     }

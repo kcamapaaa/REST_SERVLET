@@ -12,9 +12,10 @@ public class HiberUserRepository implements UserRepository {
     @Override
     public User getById(Integer id) {
         User user = null;
-        try(Session session = HiberUtil.getOpenedSession()) {
-            Query<User> query = session.createQuery("FROM User u LEFT JOIN FETCH u.eventList " +
-                                                    "WHERE u.id = :id");
+        try (Session session = HiberUtil.getOpenedSession()) {
+            Query<User> query = session.createQuery("FROM User u WHERE id = :id");
+            //LEFT JOIN FETCH u.eventList " +
+            //                    "WHERE u.id = :id
             query.setParameter("id", id);
             user = query.getSingleResult();
         } catch (Throwable throwable) {
@@ -26,7 +27,7 @@ public class HiberUserRepository implements UserRepository {
     @Override
     public List<User> getAll() {
         List<User> users = null;
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             Query<User> query = session.createQuery("FROM User");
             users = query.getResultList();
         } catch (Throwable throwable) {
@@ -37,7 +38,7 @@ public class HiberUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             session.save(user);
             session.getTransaction().commit();
@@ -49,10 +50,10 @@ public class HiberUserRepository implements UserRepository {
 
     @Override
     public User update(User user) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             User updatedUser = session.find(User.class, user.getId());
-            if(updatedUser == null) {
+            if (updatedUser == null) {
                 return null;
             }
             updatedUser.setFirstName(user.getFirstName());
@@ -65,10 +66,10 @@ public class HiberUserRepository implements UserRepository {
 
     @Override
     public boolean deleteById(Integer id) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             User deletedUser = session.find(User.class, id);
-            if(deletedUser == null) {
+            if (deletedUser == null) {
                 return false;
             }
             session.delete(deletedUser);

@@ -19,24 +19,27 @@ public class UserController extends HttpServlet {
     private final UserService userService = new UserService();
     private final Gson gson = LocalDateAdapter.getAdaptedGson();
     private PrintWriter out;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        if(req.getParameter("id") != null) {
-            getUser(req);
+        if (req.getParameter("id") != null) {
+            getUser(req, resp);
         } else {
-            getAllUsers();
+            getAllUsers(req, resp);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        if(req.getParameter("id") != null) {
-            updateUser(req);
-        } else {
-            addNewUser(req);
-        }
+        addNewUser(req, resp);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        out = resp.getWriter();
+        updateUser(req, resp);
     }
 
     @Override
@@ -44,10 +47,11 @@ public class UserController extends HttpServlet {
         deleteUser(req, resp);
     }
 
-    private void getUser(HttpServletRequest req) {
+    private void getUser(HttpServletRequest req, HttpServletResponse resp) {
         int id = Integer.parseInt(req.getParameter("id"));
+        resp.setContentType("application/json");
         User user = userService.getUserById(id);
-        if(user == null) {
+        if (user == null) {
             out.println("No user with this id.");
         } else {
             String convertUserToJson = gson.toJson(user);
@@ -55,21 +59,23 @@ public class UserController extends HttpServlet {
         }
     }
 
-    private void getAllUsers() {
+    private void getAllUsers(HttpServletRequest req, HttpServletResponse resp) {
         List<User> allUsers = userService.getAllUsers();
-        if(allUsers.isEmpty()) {
+        resp.setContentType("application/json");
+        if (allUsers.isEmpty()) {
             out.println("No users yet.");
         } else {
             allUsers.forEach(x -> out.println(gson.toJson(x)));
         }
     }
 
-    private void updateUser(HttpServletRequest req) {
+    private void updateUser(HttpServletRequest req, HttpServletResponse resp) {
         int id = Integer.parseInt(req.getParameter("id"));
+        resp.setContentType("application/json");
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
         User userById = userService.getUserById(id);
-        if(userById == null) {
+        if (userById == null) {
             out.println("No user with this id.");
         } else {
             userById.setFirstName(firstName);
@@ -79,7 +85,8 @@ public class UserController extends HttpServlet {
         }
     }
 
-    private void addNewUser(HttpServletRequest req) {
+    private void addNewUser(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/json");
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
         User user = new User();
@@ -90,6 +97,7 @@ public class UserController extends HttpServlet {
     }
 
     private void deleteUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json");
         out = resp.getWriter();
         int id = Integer.parseInt(req.getParameter("id"));
         boolean isDeleted = userService.deleteUserById(id);

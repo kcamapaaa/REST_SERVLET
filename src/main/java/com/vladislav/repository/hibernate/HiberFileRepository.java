@@ -12,9 +12,8 @@ public class HiberFileRepository implements FileRepository {
     @Override
     public File getById(Integer id) {
         File file = null;
-        try(Session session = HiberUtil.getOpenedSession()) {
-            Query<File> query = session.createQuery("FROM File f LEFT JOIN FETCH f.eventList " +
-                    "WHERE f.id = :id");
+        try (Session session = HiberUtil.getOpenedSession()) {
+            Query<File> query = session.createQuery("FROM File WHERE id = :id");
             query.setParameter("id", id);
             file = query.getSingleResult();
         } catch (Throwable throwable) {
@@ -26,7 +25,7 @@ public class HiberFileRepository implements FileRepository {
     @Override
     public List<File> getAll() {
         List<File> files = null;
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             Query<File> query = session.createQuery("FROM File");
             files = query.getResultList();
         } catch (Throwable throwable) {
@@ -37,7 +36,7 @@ public class HiberFileRepository implements FileRepository {
 
     @Override
     public File save(File file) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             session.save(file);
             session.getTransaction().commit();
@@ -49,10 +48,10 @@ public class HiberFileRepository implements FileRepository {
 
     @Override
     public File update(File file) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             File updatedFile = session.find(File.class, file.getId());
-            if(updatedFile == null) {
+            if (updatedFile == null) {
                 return null;
             }
             updatedFile.setFileName(file.getFileName());
@@ -64,10 +63,10 @@ public class HiberFileRepository implements FileRepository {
 
     @Override
     public boolean deleteById(Integer id) {
-        try(Session session = HiberUtil.getOpenedSession()) {
+        try (Session session = HiberUtil.getOpenedSession()) {
             session.beginTransaction();
             File deletedFile = session.find(File.class, id);
-            if(deletedFile == null) {
+            if (deletedFile == null) {
                 return false;
             }
             session.delete(deletedFile);

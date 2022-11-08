@@ -24,7 +24,7 @@ public class HiberEventRepository implements EventRepository {
     public List<Event> getAll() {
         List<Event> eventList = null;
         try (Session session = HiberUtil.getOpenedSession()) {
-            Query<Event> query = session.createQuery("FROM Event ");
+            Query<Event> query = session.createQuery("FROM Event");
             eventList = query.getResultList();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
