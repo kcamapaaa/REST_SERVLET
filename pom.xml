@@ -7,49 +7,66 @@
   <version>1.0-SNAPSHOT</version>
   <name>tutorial Maven Webapp</name>
   <url>http://maven.apache.org</url>
+
+  <properties>
+    <junit.version>5.9.1</junit.version>
+    <hibernate.version>6.1.4.Final</hibernate.version>
+    <mysql.version>8.0.30</mysql.version>
+    <jakarta.version>6.0.0</jakarta.version>
+    <gson.version>2.10</gson.version>
+    <assertj.version>3.23.1</assertj.version>
+    <flyway.version>8.2.0</flyway.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.1</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-
 
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-      <version>6.1.4.Final</version>
+      <version>${hibernate.version}</version>
     </dependency>
 
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.30</version>
+      <version>${mysql.version}</version>
     </dependency>
 
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>6.0.0</version>
+      <version>${jakarta.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.10</version>
+      <version>${gson.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.23.1</version>
+      <version>${assertj.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>${flyway.version}</version>
     </dependency>
 
 
   </dependencies>
+
   <build>
     <finalName>tutorial</finalName>
     <plugins>
@@ -60,6 +77,29 @@
           <source>8</source>
           <target>8</target>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>${flyway.version}</version>
+        <configuration>
+          <user>root</user>
+          <password>root</password>
+          <url>jdbc:mysql://localhost:3306/rest_try</url>
+          <driver>com.mysql.cj.jdbc.Driver</driver>
+          <schemas>
+            <schema>rest_try</schema>
+          </schemas>
+          <cleanDisabled>false</cleanDisabled>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>9.7.0</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

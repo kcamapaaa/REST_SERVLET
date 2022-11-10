@@ -2,6 +2,8 @@ package com.vladislav.controller;
 
 import com.google.gson.Gson;
 import com.vladislav.model.Event;
+import com.vladislav.model.File;
+import com.vladislav.model.User;
 import com.vladislav.service.EventService;
 import com.vladislav.service.FileService;
 import com.vladislav.service.UserService;
@@ -103,8 +105,12 @@ public class EventController extends HttpServlet {
 
         Event event = new Event();
         event.setName(eventName);
-        event.setFile(fileService.getFileById(fileId));
-        event.setUser(userService.getUserById(userId));
+        File fileById = fileService.getFileById(fileId);
+        User userById = userService.getUserById(userId);
+        event.setFile(fileById);
+        event.setUser(userById);
+        fileById.getEventList().add(event);
+        userById.getEventList().add(event);
 
         Event newEvent = eventService.addNewEvent(event);
         out.println(gson.toJson(newEvent));

@@ -2,6 +2,7 @@ package com.vladislav.model;
 
 import com.google.gson.annotations.Expose;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 @Entity
@@ -15,6 +16,7 @@ public class Event {
     @Expose
     private String eventName;
     @Column(name = "date_time", updatable = false)
+    @CreationTimestamp
     @Expose
     private LocalDateTime localDateTime;
     @ManyToOne
@@ -27,7 +29,6 @@ public class Event {
     private User user;
 
     public Event() {
-        localDateTime = LocalDateTime.now();
     }
 
     public String getName() {
