@@ -54,6 +54,7 @@ public class HiberEventRepository implements EventRepository {
             }
             updatedEvent.setName(event.getName());
             session.update(updatedEvent);
+            session.getTransaction().commit();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }

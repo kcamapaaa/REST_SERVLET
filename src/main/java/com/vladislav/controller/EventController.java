@@ -2,8 +2,6 @@ package com.vladislav.controller;
 
 import com.google.gson.Gson;
 import com.vladislav.model.Event;
-import com.vladislav.model.File;
-import com.vladislav.model.User;
 import com.vladislav.service.EventService;
 import com.vladislav.service.FileService;
 import com.vladislav.service.UserService;
@@ -18,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet(urlPatterns = "/events")
+@WebServlet(urlPatterns = "/api/v1/events/*")
 public class EventController extends HttpServlet {
     private final EventService eventService = new EventService();
     private final FileService fileService = new FileService();
@@ -29,90 +27,56 @@ public class EventController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        if (req.getParameter("id") != null) {
-            getEvent(req, resp);
+        resp.setContentType("application/json");
+        if (req.getPathInfo() != null) {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            Event eventById = eventService.getEventById(id);
+            out.println(gson.toJson(eventById));
         } else {
-            getAllEvents(req, resp);
+            List<Event> allEvents = eventService.getAllEvents();
+            allEvents.forEach(event -> out.println(gson.toJson(event)));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        addNewEvent(req, resp);
+        resp.setContentType("application/json");
+        Event event = returnEventFromBody(req);
+        int fileId = Integer.parseInt(req.getParameter("file_id"));
+        int userId = Integer.parseInt(req.getParameter("user_id"));
+        event.setUser(userService.getUserById(userId));
+        event.setFile(fileService.getFileById(fileId));
+        Event newEvent = eventService.addNewEvent(event);
+        out.println(gson.toJson(newEvent));
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        updateEvent(req, resp);
+        resp.setContentType("application/json");
+        int id = Integer.parseInt(req.getPathInfo().substring(1));
+        Event newEvent = returnEventFromBody(req);
+        newEvent.setId(id);
+        Event event = eventService.updateEvent(newEvent);
+        out.println(event == null ? "No file" : gson.toJson(event));
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        deleteEvent(req, resp);
-    }
-
-    private void getEvent(HttpServletRequest req, HttpServletResponse resp) {
-        int id = Integer.parseInt(req.getParameter("id"));
-        resp.setContentType("application/json");
-        Event event = eventService.getEventById(id);
-        if (event == null) {
-            out.println("No events.");
-        } else {
-            String convertEventToJson = gson.toJson(event);
-            out.println(convertEventToJson);
-        }
-    }
-
-    private void getAllEvents(HttpServletRequest req, HttpServletResponse resp) {
-        List<Event> allEvents = eventService.getAllEvents();
-        resp.setContentType("application/json");
-        if (allEvents.isEmpty()) {
-            out.println("No files yet.");
-        } else {
-            allEvents.forEach(x -> out.println(gson.toJson(x)));
-        }
-    }
-
-    private void updateEvent(HttpServletRequest req, HttpServletResponse resp) {
-        int id = Integer.parseInt(req.getParameter("id"));
-        resp.setContentType("application/json");
-        String eventName = req.getParameter("eventName");
-        Event eventById = eventService.getEventById(id);
-        if (eventById == null) {
-            out.println("No event with this id.");
-        } else {
-            eventById.setName(eventName);
-            Event updatedEvent = eventService.updateEvent(eventById);
-            out.println(gson.toJson(updatedEvent));
-        }
-    }
-
-    private void deleteEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
         out = resp.getWriter();
-        int id = Integer.parseInt(req.getParameter("id"));
-        boolean isDeleted = eventService.deleteEventById(id);
-        out.println(isDeleted ? "Event was deleted" : "Event was not deleted");
+        if (req.getPathInfo() == null) {
+            out.println("Enter id!");
+        } else {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            boolean result = eventService.deleteEventById(id);
+            out.println(result ? "Deleted." : "Not deleted");
+        }
     }
 
-    private void addNewEvent(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json");
-        String eventName = req.getParameter("eventName");
-        int fileId = Integer.parseInt(req.getParameter("fileId"));
-        int userId = Integer.parseInt(req.getParameter("userId"));
-
-        Event event = new Event();
-        event.setName(eventName);
-        File fileById = fileService.getFileById(fileId);
-        User userById = userService.getUserById(userId);
-        event.setFile(fileById);
-        event.setUser(userById);
-        fileById.getEventList().add(event);
-        userById.getEventList().add(event);
-
-        Event newEvent = eventService.addNewEvent(event);
-        out.println(gson.toJson(newEvent));
+    private Event returnEventFromBody(HttpServletRequest req) throws IOException {
+        String body = req.getReader().lines()
+                .reduce("", (accumulator, actual) -> accumulator + actual);
+        return gson.fromJson(body, Event.class);
     }
 }

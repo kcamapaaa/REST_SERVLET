@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet(urlPatterns = "/files")
+@WebServlet(urlPatterns = "/api/v1/files/*")
 public class FileController extends HttpServlet {
     FileService fileService = new FileService();
     private final Gson gson = LocalDateAdapter.getAdaptedGson();
@@ -23,83 +23,51 @@ public class FileController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        if (req.getParameter("id") != null) {
-            getFile(req, resp);
+        resp.setContentType("application/json");
+        if (req.getPathInfo() != null) {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            File fileById = fileService.getFileById(id);
+            out.println(gson.toJson(fileById));
         } else {
-            getAllFiles(req, resp);
+            List<File> allFiles = fileService.getAllFiles();
+            allFiles.forEach(file -> out.println(gson.toJson(file)));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        addNewFile(req, resp);
+        resp.setContentType("application/json");
+        File newFile = fileService.addNewFile(returnFileFromBody(req));
+        out.println(gson.toJson(newFile));
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         out = resp.getWriter();
-        updateFile(req, resp);
+        resp.setContentType("application/json");
+        int id = Integer.parseInt(req.getPathInfo().substring(1));
+        File newFile = returnFileFromBody(req);
+        newFile.setId(id);
+        File file = fileService.updateFile(newFile);
+        out.println(file == null ? "No file" : gson.toJson(file));
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        deleteFile(req, resp);
-    }
-
-    private void getFile(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json");
-        int id = Integer.parseInt(req.getParameter("id"));
-        File file = fileService.getFileById(id);
-        if (file == null) {
-            out.println("No file.");
-        } else {
-            String convertFileToJson = gson.toJson(file);
-            out.println(convertFileToJson);
-        }
-    }
-
-    private void getAllFiles(HttpServletRequest req, HttpServletResponse resp) {
-        List<File> allFiles = fileService.getAllFiles();
-        resp.setContentType("application/json");
-        if (allFiles.isEmpty()) {
-            out.println("No files yet.");
-        } else {
-            allFiles.forEach(x -> out.println(gson.toJson(x)));
-        }
-    }
-
-    private void updateFile(HttpServletRequest req, HttpServletResponse resp) {
-        int id = Integer.parseInt(req.getParameter("id"));
-        resp.setContentType("application/json");
-        String fileName = req.getParameter("fileName");
-        File fileById = fileService.getFileById(id);
-        if (fileById == null) {
-            out.println("No file with this id.");
-        } else {
-            fileById.setFileName(fileName);
-            File updatedFile = fileService.updateFile(fileById);
-            out.println(gson.toJson(updatedFile));
-        }
-    }
-
-    private void addNewFile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        String fileName = req.getParameter("fileName");
-        String filePath = req.getReader().lines()
-                .reduce("", (accumulator, actual) -> accumulator + actual);
-        File file = new File();
-        file.setFileName(fileName);
-        file.setFilePath(filePath);
-        File newFile = fileService.addNewFile(file);
-        out.println(gson.toJson(newFile));
-    }
-
-    private void deleteFile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         out = resp.getWriter();
-        resp.setContentType("application/json");
-        int id = Integer.parseInt(req.getParameter("id"));
-        boolean isDeleted = fileService.deleteFileById(id);
-        out.println(isDeleted ? "File was deleted" : "File was not deleted");
+        if (req.getPathInfo() == null) {
+            out.println("Enter id!");
+        } else {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            boolean result = fileService.deleteFileById(id);
+            out.println(result ? "Deleted." : "Not deleted");
+        }
+    }
+
+    private File returnFileFromBody(HttpServletRequest req) throws IOException {
+        String body = req.getReader().lines()
+                .reduce("", (accumulator, actual) -> accumulator + actual);
+        return gson.fromJson(body, File.class);
     }
 }
